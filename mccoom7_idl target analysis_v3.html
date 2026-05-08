@@ -1,0 +1,1136 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>McCoom7 — Market & Audience Target Analysis</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<style>
+:root {
+  --bg:        #f4f5f7;
+  --bg2:       #ffffff;
+  --bg3:       #f0f1f4;
+  --bg4:       #e8eaee;
+  --border:    #e2e4e9;
+  --border2:   #cbd0d8;
+  --text:      #111318;
+  --text2:     #3a3f4a;
+  --text3:     #6b7280;
+  --gold:      #b5821e;
+  --gold2:     #d4a843;
+  --gold-dim:  rgba(181,130,30,0.08);
+  --gold-dim2: rgba(181,130,30,0.15);
+  --teal:      #0e8f75;
+  --teal-dim:  rgba(14,143,117,0.08);
+  --rose:      #c0294d;
+  --rose-dim:  rgba(192,41,77,0.07);
+  --blue:      #1d5fbc;
+  --blue-dim:  rgba(29,95,188,0.07);
+  --purple:    #5b3fa6;
+  --ink:       #1a1e2a;
+  --sidebar-w: 224px;
+  --sans: 'Noto Sans KR', sans-serif;
+  --mono: 'Noto Sans KR', sans-serif;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+
+body {
+  font-family: var(--sans);
+  background: var(--bg);
+  color: var(--text);
+  display: flex;
+  min-height: 100vh;
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+/* ── SIDEBAR ── */
+.sidebar {
+  width: var(--sidebar-w);
+  background: var(--ink);
+  position: fixed;
+  top: 0; left: 0; bottom: 0;
+  display: flex;
+  flex-direction: column;
+  z-index: 100;
+  overflow-y: auto;
+}
+.sidebar-logo {
+  padding: 24px 20px 20px;
+  border-bottom: 1px solid rgba(255,255,255,0.08);
+}
+.logo-badge {
+  font-family: var(--mono);
+  font-size: 9px;
+  letter-spacing: 0.14em;
+  color: var(--gold2);
+  text-transform: uppercase;
+  margin-bottom: 6px;
+}
+.logo-name {
+  font-size: 18px;
+  font-weight: 700;
+  color: #fff;
+  letter-spacing: -0.02em;
+}
+.logo-name span { color: var(--gold2); }
+.logo-sub { font-size: 10px; color: rgba(255,255,255,0.4); margin-top: 3px; line-height: 1.5; }
+
+.nav-section { padding: 16px 12px 8px; }
+.nav-label {
+  font-size: 9px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.3);
+  padding: 0 8px;
+  margin-bottom: 4px;
+  font-family: var(--mono);
+}
+.nav-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 10px;
+  border-radius: 7px;
+  cursor: pointer;
+  color: rgba(255,255,255,0.5);
+  font-size: 12px;
+  font-weight: 400;
+  transition: all 0.15s;
+  text-decoration: none;
+  margin-bottom: 2px;
+}
+.nav-item:hover { background: rgba(255,255,255,0.06); color: rgba(255,255,255,0.85); }
+.nav-item.active { background: rgba(212,168,67,0.15); color: var(--gold2); }
+.nav-dot { width: 5px; height: 5px; border-radius: 50%; background: currentColor; flex-shrink: 0; opacity: 0.7; }
+.nav-item.active .nav-dot { opacity: 1; }
+
+.sidebar-info {
+  padding: 12px 18px 14px;
+  font-size: 11px;
+  color: rgba(255,255,255,0.35);
+  line-height: 1.75;
+}
+.sidebar-info .si-name { color: rgba(255,255,255,0.7); font-weight: 500; font-size: 12px; margin-bottom: 4px; }
+
+.sidebar-footer {
+  margin-top: auto;
+  padding: 14px 20px;
+  border-top: 1px solid rgba(255,255,255,0.08);
+  font-size: 10px;
+  color: rgba(255,255,255,0.3);
+  line-height: 1.7;
+}
+.sidebar-footer span { color: var(--gold2); }
+
+/* ── MAIN ── */
+.main { margin-left: var(--sidebar-w); flex: 1; min-height: 100vh; }
+
+/* ── TOP BAR ── */
+.topbar {
+  height: 52px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 32px;
+  background: var(--bg2);
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+}
+.topbar-left { display: flex; align-items: center; gap: 10px; }
+.topbar-org {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--ink);
+  letter-spacing: -0.01em;
+}
+.topbar-sep { color: var(--border2); font-size: 14px; }
+.topbar-title { font-size: 13px; color: var(--text3); font-weight: 400; }
+.topbar-meta { display: flex; gap: 8px; }
+.meta-chip {
+  font-family: var(--mono);
+  font-size: 10px;
+  color: var(--text3);
+  background: var(--bg3);
+  padding: 4px 10px;
+  border-radius: 4px;
+  border: 1px solid var(--border);
+}
+.meta-chip b { color: var(--gold); font-weight: 500; }
+
+/* ── SECTION ── */
+.section {
+  padding: 32px 32px 44px;
+  border-bottom: 1px solid var(--border);
+  opacity: 0;
+  transform: translateY(14px);
+  animation: fadeUp 0.45s ease forwards;
+}
+.section:nth-child(1){animation-delay:0.05s}
+.section:nth-child(2){animation-delay:0.12s}
+.section:nth-child(3){animation-delay:0.19s}
+.section:nth-child(4){animation-delay:0.26s}
+@keyframes fadeUp { to { opacity:1; transform:translateY(0); } }
+.section:last-child { border-bottom: none; }
+
+.section-head { margin-bottom: 24px; }
+.section-id {
+  font-family: var(--mono);
+  font-size: 9px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--gold);
+  margin-bottom: 4px;
+}
+.section-title {
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--text);
+  letter-spacing: -0.02em;
+}
+.section-desc { font-size: 12px; color: var(--text3); margin-top: 4px; }
+
+/* ── KPI ROW ── */
+.kpi-row { display: grid; grid-template-columns: repeat(4,1fr); gap: 12px; margin-bottom: 20px; }
+.kpi {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 18px 20px;
+  position: relative;
+  overflow: hidden;
+}
+.kpi::before {
+  content:''; position:absolute;
+  top:0; left:0; right:0; height:3px;
+  background: var(--kpi-color, var(--gold));
+}
+.kpi-val {
+  font-size: 26px;
+  font-weight: 700;
+  color: var(--kpi-color, var(--gold));
+  letter-spacing: -0.03em;
+  line-height: 1.1;
+  margin-bottom: 5px;
+}
+.kpi-label { font-size: 12px; color: var(--text2); font-weight: 500; line-height: 1.4; }
+.kpi-sub { font-size: 11px; color: var(--text3); margin-top: 3px; }
+
+/* ── GRIDS ── */
+.grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; }
+.grid-65 { display: grid; grid-template-columns: 1.65fr 1fr; gap: 16px; }
+
+/* ── PANEL ── */
+.panel {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  overflow: hidden;
+}
+.panel-head {
+  padding: 13px 18px 12px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: var(--bg3);
+}
+.panel-title { font-size: 12px; font-weight: 700; color: var(--text); }
+.panel-badge {
+  font-family: var(--mono);
+  font-size: 8px;
+  padding: 2px 7px;
+  border-radius: 3px;
+  background: var(--bg4);
+  border: 1px solid var(--border2);
+  color: var(--text3);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+.panel-body { padding: 18px; }
+.panel-body.no-pad { padding: 0; }
+
+/* ── INSIGHT CARDS ── */
+.insight-card {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 18px;
+}
+.ic-accent {
+  font-size: 18px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  margin-bottom: 6px;
+  line-height: 1.2;
+}
+.ic-label {
+  font-size: 9px;
+  font-family: var(--mono);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text3);
+  margin-bottom: 6px;
+}
+.ic-body { font-size: 12px; color: var(--text2); line-height: 1.65; }
+
+/* ── ALERTS ── */
+.trend-alert {
+  background: var(--gold-dim);
+  border: 1px solid rgba(181,130,30,0.2);
+  border-radius: 10px;
+  padding: 14px 18px;
+  margin-bottom: 20px;
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+}
+.trend-icon {
+  font-family: var(--mono);
+  font-size: 9px;
+  letter-spacing: 0.1em;
+  color: var(--gold);
+  background: var(--gold-dim2);
+  padding: 3px 7px;
+  border-radius: 4px;
+  flex-shrink: 0;
+  margin-top: 1px;
+  text-transform: uppercase;
+}
+.trend-text { font-size: 12px; color: var(--text2); line-height: 1.65; }
+.trend-text strong { color: var(--gold); font-weight: 700; }
+
+.warning-alert {
+  background: var(--rose-dim);
+  border: 1px solid rgba(192,41,77,0.15);
+  border-radius: 10px;
+  padding: 13px 17px;
+  margin-top: 16px;
+  font-size: 12px;
+  color: var(--rose);
+  line-height: 1.65;
+}
+.warning-alert strong { font-weight: 700; }
+
+.gold-alert {
+  background: var(--gold-dim);
+  border: 1px solid rgba(181,130,30,0.2);
+  border-radius: 10px;
+  padding: 13px 17px;
+  margin-top: 16px;
+  font-size: 12px;
+  color: var(--gold);
+  line-height: 1.65;
+}
+.gold-alert strong { font-weight: 700; }
+
+/* ── DEMO TABLE ── */
+.demo-table-wrap { overflow-x: auto; }
+.demo-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12px;
+}
+.demo-table th {
+  padding: 9px 13px;
+  font-family: var(--mono);
+  font-size: 9px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text3);
+  text-align: center;
+  border-bottom: 1px solid var(--border);
+  background: var(--bg3);
+  white-space: nowrap;
+}
+.demo-table th.left { text-align: left; }
+.demo-table td {
+  padding: 9px 13px;
+  text-align: center;
+  border-bottom: 1px solid var(--border);
+  color: var(--text2);
+  font-size: 12px;
+}
+.demo-table tr:last-child td { border-bottom: none; }
+.demo-table tr:hover td { background: var(--bg3); }
+.demo-table tr.brand-row td { background: rgba(181,130,30,0.03); }
+.demo-table tr.divider-row td { border-top: 2px solid rgba(181,130,30,0.25); }
+.demo-table td.kw { text-align: left; font-weight: 700; color: var(--text); white-space: nowrap; }
+.demo-table td.kw.brand { color: var(--gold); }
+.cell-1 { background: rgba(29,95,188,0.1); color: #1d5fbc; font-weight: 700; border-radius: 4px; }
+.cell-2 { background: rgba(14,143,117,0.1); color: #0e8f75; font-weight: 600; border-radius: 4px; }
+.cell-low { color: #bbbfc7; }
+.cell-zero { color: #bbbfc7; font-size: 11px; }
+.f-90up { background: rgba(192,41,77,0.12); color: #a01f3f; font-weight: 700; border-radius: 4px; }
+.f-85   { background: rgba(192,41,77,0.08); color: #b82848; font-weight: 600; border-radius: 4px; }
+.f-80   { background: rgba(192,41,77,0.05); color: #c0294d; border-radius: 4px; }
+.m-50up { background: rgba(91,63,166,0.12); color: #4a3390; font-weight: 700; border-radius: 4px; }
+.m-30   { background: rgba(91,63,166,0.06); color: #6048a8; border-radius: 4px; }
+.brand-badge-sm {
+  display: inline-block;
+  font-size: 8px;
+  font-family: var(--mono);
+  padding: 1px 4px;
+  border-radius: 3px;
+  background: var(--gold-dim2);
+  color: var(--gold);
+  margin-left: 4px;
+  vertical-align: middle;
+  letter-spacing: 0.05em;
+}
+
+/* ── BRAND CARDS ── */
+.brand-cards { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; margin-bottom: 20px; }
+.brand-card {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 16px;
+  transition: box-shadow 0.2s;
+}
+.brand-card:hover { box-shadow: 0 2px 10px rgba(0,0,0,0.08); }
+.brand-card.our {
+  border-color: rgba(181,130,30,0.4);
+  background: rgba(181,130,30,0.03);
+}
+.bc-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 8px; margin-bottom: 6px; }
+.bc-name { font-size: 13px; font-weight: 700; color: var(--text); }
+.bc-price {
+  font-family: var(--mono);
+  font-size: 9px;
+  color: var(--gold);
+  background: var(--gold-dim2);
+  padding: 2px 6px;
+  border-radius: 3px;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+.bc-sub { font-size: 10px; color: var(--text3); margin-bottom: 8px; }
+.bc-tags { display: flex; flex-wrap: wrap; gap: 4px; margin-bottom: 8px; }
+.bc-tag {
+  font-size: 9px;
+  padding: 2px 6px;
+  border-radius: 3px;
+  border: 1px solid var(--border2);
+  color: var(--text3);
+}
+.bc-body { font-size: 11px; color: var(--text2); line-height: 1.62; }
+.our-label {
+  font-family: var(--mono);
+  font-size: 8px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--gold);
+  margin-bottom: 4px;
+}
+
+/* ── PRICE TABLE ── */
+.price-table { width: 100%; border-collapse: collapse; font-size: 12px; }
+.price-table th {
+  padding: 9px 14px;
+  text-align: left;
+  font-family: var(--mono);
+  font-size: 9px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text3);
+  border-bottom: 1px solid var(--border);
+  background: var(--bg3);
+}
+.price-table td {
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--border);
+  color: var(--text2);
+}
+.price-table tr:last-child td { border-bottom: none; }
+.price-table tr.our td { background: rgba(181,130,30,0.04); color: var(--text); font-weight: 600; }
+.price-table tr:hover td { background: var(--bg3); }
+.tier {
+  display: inline-block;
+  font-family: var(--mono);
+  font-size: 8px;
+  padding: 2px 6px;
+  border-radius: 3px;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+.tier-lux { background: rgba(181,130,30,0.15); color: var(--gold); }
+.tier-pre { background: var(--blue-dim); color: var(--blue); border: 1px solid rgba(29,95,188,0.15); }
+.tier-mid { background: var(--bg3); color: var(--text3); border: 1px solid var(--border2); }
+
+/* ── POSITIONING MAP ── */
+.maps-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 20px; }
+.map-wrap {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 18px;
+}
+.map-label { font-size: 12px; font-weight: 700; color: var(--text); margin-bottom: 12px; }
+
+/* ── POSITIONING STATEMENT ── */
+.pos-statement {
+  background: var(--ink);
+  border-radius: 12px;
+  padding: 32px 36px;
+  margin-bottom: 20px;
+  position: relative;
+  overflow: hidden;
+}
+.pos-statement::before {
+  content: '"';
+  position: absolute;
+  top: -20px; left: 24px;
+  font-size: 160px;
+  color: rgba(212,168,67,0.07);
+  font-family: Georgia, serif;
+  line-height: 1;
+  pointer-events: none;
+}
+.pos-label {
+  font-family: var(--mono);
+  font-size: 9px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--gold2);
+  margin-bottom: 14px;
+}
+.pos-text {
+  font-size: 17px;
+  font-weight: 400;
+  line-height: 1.75;
+  color: rgba(255,255,255,0.9);
+  margin-bottom: 28px;
+  letter-spacing: -0.01em;
+}
+.pos-text em { font-style: normal; color: var(--gold2); font-weight: 700; }
+.pos-pillars {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 20px;
+  padding-top: 22px;
+  border-top: 1px solid rgba(255,255,255,0.1);
+}
+.pillar-id {
+  font-family: var(--mono);
+  font-size: 9px;
+  color: var(--gold2);
+  letter-spacing: 0.1em;
+  margin-bottom: 5px;
+  text-transform: uppercase;
+}
+.pillar-name { font-size: 13px; font-weight: 700; color: #fff; margin-bottom: 5px; }
+.pillar-body { font-size: 11px; color: rgba(255,255,255,0.55); line-height: 1.65; }
+
+/* ── PERSONA ── */
+.persona-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; }
+.persona {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 16px;
+}
+.p-num {
+  width: 28px; height: 28px;
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-family: var(--mono);
+  font-size: 11px;
+  font-weight: 500;
+  margin-bottom: 10px;
+}
+.p-name { font-size: 13px; font-weight: 700; color: var(--text); margin-bottom: 3px; }
+.p-age { font-size: 11px; color: var(--text3); margin-bottom: 8px; }
+.p-tags { display: flex; flex-wrap: wrap; gap: 4px; }
+.p-tag {
+  font-size: 9px;
+  padding: 2px 6px;
+  border-radius: 3px;
+  background: var(--bg3);
+  color: var(--text3);
+  border: 1px solid var(--border);
+}
+
+/* ── FOOTNOTES ── */
+.footnotes {
+  margin-top: 32px;
+  padding-top: 20px;
+  border-top: 1px solid var(--border);
+}
+.footnotes-title {
+  font-family: var(--mono);
+  font-size: 9px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text3);
+  margin-bottom: 10px;
+}
+.footnote-item {
+  font-size: 11px;
+  color: var(--text3);
+  line-height: 1.7;
+  display: flex;
+  gap: 6px;
+}
+.fn-num {
+  font-family: var(--mono);
+  font-size: 9px;
+  color: var(--gold);
+  flex-shrink: 0;
+  padding-top: 2px;
+}
+
+/* ── FOOTER ── */
+.footer {
+  background: var(--ink);
+  padding: 22px 32px;
+  font-size: 11px;
+  color: rgba(255,255,255,0.4);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-left: 0;
+}
+.footer-brand { color: rgba(255,255,255,0.7); }
+.footer-brand strong { font-weight: 700; color: #fff; }
+
+/* ── SCROLLBAR ── */
+::-webkit-scrollbar { width: 5px; height: 5px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 4px; }
+</style>
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<aside class="sidebar">
+  <div class="sidebar-logo">
+    <div class="logo-badge">인크로스데이터랩 (IDL)</div>
+    <div class="logo-name">McCoom<span>7</span></div>
+    <div class="logo-sub">Market &amp; Audience<br>Target Analysis</div>
+  </div>
+  <nav>
+    <div class="nav-section">
+      <div class="nav-label">분석 섹션</div>
+      <a class="nav-item active" href="#s1"><span class="nav-dot"></span>01 · 시장 오디언스</a>
+      <a class="nav-item" href="#s2"><span class="nav-dot"></span>02 · 검색자 데모</a>
+      <a class="nav-item" href="#s3"><span class="nav-dot"></span>03 · 경쟁사 분석</a>
+      <a class="nav-item" href="#s4"><span class="nav-dot"></span>04 · 포지셔닝</a>
+    </div>
+    <div class="nav-section">
+      <div class="nav-label">브랜드 정보</div>
+      <div class="sidebar-info">
+        <div class="si-name">매쿰7 (McCoom7)</div>
+        성분 · HDMS PLLA<br>
+        제조 · 사치바이오<br>
+        가격 · 80–100만 원<br>
+        분류 · 콜라겐 모듈레이터
+      </div>
+    </div>
+  </nav>
+  <div class="sidebar-footer">
+    Demo: Blackkiwi · 2026<br>
+    기타 출처 각주 참조
+  </div>
+</aside>
+
+<!-- MAIN -->
+<main class="main">
+
+  <!-- TOPBAR -->
+  <div class="topbar">
+    <div class="topbar-left">
+      <span class="topbar-org">인크로스데이터랩(IDL)</span>
+      <span class="topbar-sep">|</span>
+      <span class="topbar-title">Market &amp; Audience Target Analysis</span>
+    </div>
+    <div class="topbar-meta">
+      <div class="meta-chip">PLLA · HDMS</div>
+      <div class="meta-chip">가격대 <b>80–100만 원</b></div>
+      <div class="meta-chip">기준 <b>2026</b></div>
+    </div>
+  </div>
+
+  <!-- S1 시장 오디언스 -->
+  <section class="section" id="s1">
+    <div class="section-head">
+      <div class="section-id">01 · MARKET AUDIENCE</div>
+      <div class="section-title">스킨부스터 시장 주요 오디언스 타깃</div>
+      <div class="section-desc">시장 규모, 핵심 트렌드, 소비자 행동 패턴 분석</div>
+    </div>
+
+    <div class="kpi-row">
+      <div class="kpi" style="--kpi-color:var(--gold)">
+        <div class="kpi-val">9.8%</div>
+        <div class="kpi-label">글로벌 CAGR</div>
+        <div class="kpi-sub">2025–2034 연평균 성장률 <sup>1</sup></div>
+      </div>
+      <div class="kpi" style="--kpi-color:var(--teal)">
+        <div class="kpi-val">~1,000억</div>
+        <div class="kpi-label">국내 예상 시장 규모</div>
+        <div class="kpi-sub">원 기준 추정치 <sup>2</sup></div>
+      </div>
+      <div class="kpi" style="--kpi-color:var(--rose)">
+        <div class="kpi-val">80.5%</div>
+        <div class="kpi-label">여성 검색 비율</div>
+        <div class="kpi-sub">'스킨부스터' 네이버 검색자 <sup>3</sup></div>
+      </div>
+      <div class="kpi" style="--kpi-color:var(--blue)">
+        <div class="kpi-val">63.8%</div>
+        <div class="kpi-label">30–40대 집중도</div>
+        <div class="kpi-sub">'스킨부스터' 키워드 기준 <sup>4</sup></div>
+      </div>
+    </div>
+
+    <div class="trend-alert">
+      <div class="trend-icon">TREND</div>
+      <div class="trend-text">
+        <strong>슬로우에이징 → 액티브에이징 전환</strong> — 보톡스·필러 같은 즉각적 변화보다 피부 본연의 재생력을 키우는 근본적 노화 방지 수요 폭발. 30~40대는 '지금부터의 예방'이라는 선제적 투자 심리로 PLLA 계열 고가 시술 진입 연령이 낮아지는 추세. 2025년 뷰티의 핵심 키워드는 <strong>'롱제비티(Longevity)'</strong> — 안티에이징을 초월한 능동적 피부 재생으로의 패러다임 전환.
+      </div>
+    </div>
+
+    <div class="grid-3">
+      <div class="insight-card">
+        <div class="ic-label">핵심 타깃 연령</div>
+        <div class="ic-accent" style="color:var(--teal)">30–50대 여성</div>
+        <div class="ic-body">스킨부스터 검색자 중 30대 35.0%, 40대 28.8%, 50대+ 17.9%로 30~50대가 81.7% 차지. PLLA 고가 시술은 30~40대로 더욱 집중됨.</div>
+      </div>
+      <div class="insight-card">
+        <div class="ic-label">주요 소비 동기</div>
+        <div class="ic-accent" style="color:var(--gold)">예방적 투자</div>
+        <div class="ic-body">단순 보습을 넘어 진피층 콜라겐 구조 자체를 복원하려는 니즈. '티 안 나는 자연스러운 변화'와 '근본적 재생' 키워드 주도.</div>
+      </div>
+      <div class="insight-card">
+        <div class="ic-label">정보 탐색 패턴</div>
+        <div class="ic-accent" style="color:var(--purple)">3단계 교차 검증</div>
+        <div class="ic-body">강남언니·여신티켓 가격 비교 → 네이버 블로그·카페 성분 심화 탐색 → 주치의 최종 상담. 성분·기전 공부 후 시술 결정하는 '공부형 소비자' 증가.</div>
+      </div>
+    </div>
+
+    <div class="warning-alert">
+      <strong>⚠ 굿닥 데이터 참고사항:</strong> 굿닥 스킨부스터 상담 신청자 데이터(여성 96%, 50대 45%)는 평균 가격 7.5만 원대인 '저가 스킨부스터 관심층' 기준으로, 고가의 매쿰7(80~100만 원) 타깃과 상이할 수 있음.<sup>4</sup> 고가 PLLA 시술 타깃은 '스컬트라', '쥬베룩볼륨' 등 <strong>개별 브랜드 키워드 검색자 데이터</strong>로 파악하는 것이 더 적합하여 아래와 같이 브랜드별 데모 분석을 진행.
+    </div>
+
+    <div class="footnotes">
+      <div class="footnotes-title">각주 · 출처</div>
+      <div class="footnote-item"><span class="fn-num">1</span><span>Global Skin Boosters Market Report — Grand View Research / IMARC Group (2024). 스킨부스터 글로벌 시장 CAGR 9.8% (2025–2034) 전망.</span></div>
+      <div class="footnote-item"><span class="fn-num">2</span><span>국내 미용의료 시장 규모 추정치 — 대한피부과학회, 보건복지부 의료기기 판매 통계 (2023–2024) 기반 추정.</span></div>
+      <div class="footnote-item"><span class="fn-num">3</span><span>블랙키위(Blackkiwi) '스킨부스터' 키워드 검색자 성·연령 분포 데이터 — 네이버 검색 광고 시스템 기반, 조회 기준 2026.</span></div>
+      <div class="footnote-item"><span class="fn-num">4</span><span>굿닥(Goodoc) 스킨부스터 카테고리 상담 신청자 통계 — 굿닥 공식 블로그 / 서비스 통계 공개 자료 (2022–2023 기준).</span></div>
+    </div>
+  </section>
+
+  <!-- S2 검색자 데모 -->
+  <section class="section" id="s2">
+    <div class="section-head">
+      <div class="section-id">02 · KEYWORD DEMOGRAPHICS</div>
+      <div class="section-title">주요 스킨부스터 브랜드 검색자 성·연령 분포</div>
+      <div class="section-desc">블랙키위 × 네이버 검색 데이터 기반<sup>3</sup> — <span style="color:var(--blue);font-weight:600">■ 1위</span> <span style="color:var(--teal);font-weight:600">■ 2위</span> 연령대</div>
+    </div>
+
+    <div class="grid-65" style="margin-bottom:20px">
+      <div class="panel">
+        <div class="panel-head">
+          <div class="panel-title">키워드별 성·연령 분포</div>
+          <div class="panel-badge">BLACKKIWI · 2026</div>
+        </div>
+        <div class="panel-body no-pad">
+          <div class="demo-table-wrap">
+            <table class="demo-table">
+              <thead>
+                <tr>
+                  <th class="left" style="width:108px">키워드</th>
+                  <th>10대</th><th>20대</th><th>30대</th><th>40대</th><th>50대+</th>
+                  <th style="border-left:1px solid var(--border)">여성</th>
+                  <th>남성</th>
+                </tr>
+              </thead>
+              <tbody id="demoTbody"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <div style="display:flex;flex-direction:column;gap:12px">
+        <div class="panel" style="flex:1">
+          <div class="panel-head"><div class="panel-title">연령 분포 비교</div></div>
+          <div class="panel-body" style="padding:14px">
+            <div style="position:relative;width:100%;height:210px">
+              <canvas id="ageChart" role="img" aria-label="키워드별 연령대 검색 비율 비교 막대 차트"></canvas>
+            </div>
+          </div>
+        </div>
+        <div class="panel">
+          <div class="panel-head"><div class="panel-title">여성 비율 순위</div></div>
+          <div class="panel-body" style="padding:14px">
+            <div style="position:relative;width:100%;height:172px">
+              <canvas id="genderChart" role="img" aria-label="키워드별 여성 검색 비율 수평 막대 차트"></canvas>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="gold-alert">
+      <strong>메쿰7 검색자 해석 —</strong> 8개 키워드 중 유일한 남성 우세로 확인됨(남성 51%). 이는 검색량이 적은 신규 브랜드 특성상 의료진·업계 관계자가 검색을 주도하는 것으로 추정됨. 한편 30~40대(합산 76.4%)는 전체 1위로 확인되며, 다른 경쟁사 브랜드의 데모 특성을 비추어볼 때 일반 소비자(30~40대 여성) 인지도 구축이 최우선 과제로 보임.
+    </div>
+  </section>
+
+  <!-- S3 경쟁사 분석 -->
+  <section class="section" id="s3">
+    <div class="section-head">
+      <div class="section-id">03 · COMPETITIVE ANALYSIS</div>
+      <div class="section-title">주요 경쟁 브랜드 USP · 인기 요인 · 가격 비교</div>
+      <div class="section-desc">스킨부스터 시장 주요 플레이어 포지션 및 소비자 소구점 분석<sup>5</sup></div>
+    </div>
+
+    <div class="brand-cards">
+      <div class="brand-card">
+        <div class="bc-top"><div class="bc-name">스컬트라</div><div class="bc-price">59–80만 원/바이알</div></div>
+        <div class="bc-sub">갈더마 · PLLA 원조 · FDA·식약처 허가</div>
+        <div class="bc-tags"><span class="bc-tag">30년 임상</span><span class="bc-tag">강력한 볼륨</span><span class="bc-tag">2년+ 지속</span></div>
+        <div class="bc-body">PLLA 시장 신뢰도 1위. 넓은 볼륨 복원 탁월. 단, 결절 부작용 우려 주요 약점. 주 타깃 45–60대.</div>
+      </div>
+      <div class="brand-card">
+        <div class="bc-top"><div class="bc-name">쥬베룩</div><div class="bc-price">10만 원~/1cc</div></div>
+        <div class="bc-sub">바임글로벌 · PDLLA+HA · 의료기기 허가</div>
+        <div class="bc-tags"><span class="bc-tag">부작용 적음</span><span class="bc-tag">즉각 보습+탄력</span><span class="bc-tag">스킨·볼륨 2종</span></div>
+        <div class="bc-body">스컬트라 대비 결절 위험 낮음. HA 혼합 즉각 수분. 의료기기 허가 신뢰도. 30–50대 폭넓게.</div>
+      </div>
+      <div class="brand-card">
+        <div class="bc-top"><div class="bc-name">리쥬란</div><div class="bc-price">20–40만 원/2cc</div></div>
+        <div class="bc-sub">파마리서치 · PN(연어DNA) · 의료기기 허가</div>
+        <div class="bc-tags"><span class="bc-tag">피부 재생 1위</span><span class="bc-tag">연어주사 인지도</span><span class="bc-tag">글로벌 수출 1위</span></div>
+        <div class="bc-body">대중화 선도. 남성 25%로 성별 편중 낮음. K-뷰티 외국인 수요 30%. 20–50대 전 연령.</div>
+      </div>
+      <div class="brand-card">
+        <div class="bc-top"><div class="bc-name">올리디아</div><div class="bc-price">스컬트라 대비 합리적</div></div>
+        <div class="bc-sub">피알피사이언스 · PLLA · FDA+CE 승인</div>
+        <div class="bc-tags"><span class="bc-tag">스컬트라 동등 임상</span><span class="bc-tag">30대 검색 1위</span></div>
+        <div class="bc-body">스컬트라 head-to-head 임상 동등성 입증. 30대 검색 38.6% 경쟁사 최고. 가격 민감 고객 대안.</div>
+      </div>
+      <div class="brand-card">
+        <div class="bc-top"><div class="bc-name">엘란쎄 · 래디어스</div><div class="bc-price">50–200만 원</div></div>
+        <div class="bc-sub">PCL(엘란쎄) / CaHA(래디어스) · 신흥 프리미엄</div>
+        <div class="bc-tags"><span class="bc-tag">5년 지속</span><span class="bc-tag">즉시+장기 볼륨</span><span class="bc-tag">얼리어답터</span></div>
+        <div class="bc-body">엘란쎄 5년 지속 럭셔리. 래디어스 즉시+장기 콜라겐. 30–45세 얼리어답터 수요 증가.</div>
+      </div>
+      <div class="brand-card our">
+        <div class="our-label">OUR BRAND</div>
+        <div class="bc-top"><div class="bc-name" style="color:var(--gold)">매쿰7 (McCoom7)</div><div class="bc-price">80–100만 원</div></div>
+        <div class="bc-sub">사치바이오 · HDMS PLLA (고밀도 구형)</div>
+        <div class="bc-tags">
+          <span class="bc-tag" style="border-color:rgba(181,130,30,0.35);color:var(--gold)">SCI 논문 임상 입증</span>
+          <span class="bc-tag" style="border-color:rgba(181,130,30,0.35);color:var(--gold)">결절 최소화</span>
+          <span class="bc-tag" style="border-color:rgba(181,130,30,0.35);color:var(--gold)">Piezo-1 기전</span>
+          <span class="bc-tag" style="border-color:rgba(181,130,30,0.35);color:var(--gold)">면역 기반 재생</span>
+        </div>
+        <div class="bc-body">동결건조 프리미엄 PLLA. 고밀도 구형 구조로 안전성·균일성 향상. SCI급 논문 2편으로 과학적 신뢰도 차별화.</div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-head"><div class="panel-title">가격대 비교</div><div class="panel-badge">PRICING</div></div>
+      <div class="panel-body no-pad">
+        <table class="price-table">
+          <thead><tr><th>브랜드</th><th>성분</th><th>시술 단위 가격</th><th>1회 총 비용</th><th>포지셔닝</th></tr></thead>
+          <tbody>
+            <tr><td>리쥬란</td><td style="color:var(--text3)">PN</td><td>2cc 20–40만 원</td><td>30–60만 원</td><td><span class="tier tier-mid">대중 프리미엄</span></td></tr>
+            <tr><td>쥬베룩 스킨</td><td style="color:var(--text3)">PDLLA+HA</td><td>2cc 23만 원~</td><td>25–50만 원</td><td><span class="tier tier-mid">대중 프리미엄</span></td></tr>
+            <tr><td>쥬베룩 볼륨</td><td style="color:var(--text3)">PDLLA</td><td>1cc 10만 원~</td><td>30–80만 원</td><td><span class="tier tier-mid">중~프리미엄</span></td></tr>
+            <tr><td>올리디아</td><td style="color:var(--text3)">PLLA</td><td>스컬트라 대비 저렴</td><td>60–120만 원</td><td><span class="tier tier-pre">중프리미엄</span></td></tr>
+            <tr><td>스컬트라</td><td style="color:var(--text3)">PLLA</td><td>1바이알 59–80만 원</td><td>80–180만 원</td><td><span class="tier tier-pre">프리미엄</span></td></tr>
+            <tr><td>래디어스</td><td style="color:var(--text3)">CaHA</td><td>1시린지 99만 원~</td><td>100–180만 원</td><td><span class="tier tier-pre">프리미엄</span></td></tr>
+            <tr><td>엘란쎄</td><td style="color:var(--text3)">PCL</td><td>1시린지 50–100만 원</td><td>100–200만 원</td><td><span class="tier tier-lux">럭셔리</span></td></tr>
+            <tr class="our"><td style="color:var(--gold)">매쿰7 ★</td><td style="color:var(--text3)">HDMS PLLA</td><td>80–100만 원</td><td>80–100만 원</td><td><span class="tier tier-pre">프리미엄</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="footnotes">
+      <div class="footnotes-title">각주 · 출처</div>
+      <div class="footnote-item"><span class="fn-num">5</span><span>브랜드별 허가·임상 정보 — 식품의약품안전처 의료기기 허가 데이터베이스, 각 제조사 공식 자료 및 피부과 전문의 인터뷰 기반 (2024–2025). 가격 데이터: 강남언니·여신티켓·굿닥 등 미용의료 비교 플랫폼 게시 가격 참고 (2025년 기준).</span></div>
+    </div>
+  </section>
+
+  <!-- S4 포지셔닝 -->
+  <section class="section" id="s4">
+    <div class="section-head">
+      <div class="section-id">04 · POSITIONING & STRATEGY</div>
+      <div class="section-title">포지셔닝 맵 · 핵심 소구점</div>
+      <div class="section-desc">경쟁 구도 내 매쿰7의 전략적 포지션과 타깃 소비자 정의</div>
+    </div>
+
+    <div class="maps-grid">
+      <div class="map-wrap">
+        <div class="map-label">Map 01 — 가격 × 인지도</div>
+        <div style="position:relative;width:100%;height:290px">
+          <canvas id="map1" role="img" aria-label="가격 대 인지도 포지셔닝 맵"></canvas>
+        </div>
+      </div>
+      <div class="map-wrap">
+        <div class="map-label">Map 02 — 가격 × 기능성 (콜라겐 재생 깊이)</div>
+        <div style="position:relative;width:100%;height:290px">
+          <canvas id="map2" role="img" aria-label="가격 대 기능성 포지셔닝 맵"></canvas>
+        </div>
+      </div>
+    </div>
+
+    <div class="pos-statement">
+      <div class="pos-label">McCoom7 · Core Positioning Statement</div>
+      <div class="pos-text">
+        "<em>스컬트라의 효과</em> + <em>쥬베룩의 안전성</em>을 넘어선<br>
+        과학적으로 입증된 <em>차세대 PLLA</em>"<br>
+        <span style="font-size:14px;color:rgba(255,255,255,0.4)">— 근본적 피부 재생의 새 기준</span>
+      </div>
+      <div class="pos-pillars">
+        <div>
+          <div class="pillar-id">EVIDENCE</div>
+          <div class="pillar-name">SCI 논문 임상 근거</div>
+          <div class="pillar-body">Cells 저널 베스트 논문 선정. Piezo-1 채널 활성화를 통한 콜라겐 재생 메커니즘 과학적 규명. 면역세포(M2 Macrophage) 조절을 통한 피부 환경 복원.</div>
+        </div>
+        <div>
+          <div class="pillar-id">SAFETY</div>
+          <div class="pillar-name">결절 부작용 최소화</div>
+          <div class="pillar-body">고밀도 구형 PLLA 입자 구조로 기존 PLLA의 결절 위험 획기적 감소. 스컬트라 경험 후 부작용 우려층의 최적 업그레이드 대안.</div>
+        </div>
+        <div>
+          <div class="pillar-id">TARGET</div>
+          <div class="pillar-name">30–49세 고소득 / 시술 관심 여성</div>
+          <div class="pillar-body">성분·기전을 직접 공부하는 과학적 근거 중시 소비자. 연 소득 6,000만 원 이상. 월 정기 피부과 내원. 스컬트라·엘란쎄 동급 가격 수용 가능.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="persona-grid">
+      <div class="persona">
+        <div class="p-num" style="background:var(--blue-dim);color:var(--blue)">P1</div>
+        <div class="p-name">선제 투자형 커리어우먼</div>
+        <div class="p-age">35–42세 · 전문직·관리직 · 연 6,000만 원+</div>
+        <div class="p-tags">
+          <span class="p-tag">과학적 근거 중시</span>
+          <span class="p-tag">슬로우에이징</span>
+          <span class="p-tag">교차 검증형</span>
+        </div>
+      </div>
+      <div class="persona">
+        <div class="p-num" style="background:var(--teal-dim);color:var(--teal)">P2</div>
+        <div class="p-name">관리 고도화형 40대 여성</div>
+        <div class="p-age">42–49세 · 기혼 전문직·주부 · 가구 연 1억+</div>
+        <div class="p-tags">
+          <span class="p-tag">효과 우선</span>
+          <span class="p-tag">부작용 민감</span>
+          <span class="p-tag">주치의 신뢰</span>
+        </div>
+      </div>
+      <div class="persona">
+        <div class="p-num" style="background:var(--gold-dim2);color:var(--gold)">P3</div>
+        <div class="p-name">프리미엄 얼리어답터</div>
+        <div class="p-age">30–40세 · IT·금융·뷰티업계 · 연 7,000만 원+</div>
+        <div class="p-tags">
+          <span class="p-tag">트렌드 리더</span>
+          <span class="p-tag">콘텐츠 공유</span>
+          <span class="p-tag">앰배서더 잠재력</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="footnotes">
+      <div class="footnotes-title">각주 · 출처</div>
+      <div class="footnote-item"><span class="fn-num">6</span><span>포지셔닝 맵 좌표 — 전문가 판단(브랜드 컨설턴트) 기반 상대적 위치 추정. 인지도 수치는 강남언니·굿닥 리뷰 건수 및 네이버 검색량 상대 비교, 가격 수치는 섹션 03 가격표 기반 정규화.</span></div>
+      <div class="footnote-item"><span class="fn-num">7</span><span>매쿰7 임상 근거 — Kim et al., "HDMS-PLLA Stimulates Collagen Synthesis via Piezo-1 Mechanosensing Channel", <em>Cells</em> (2023), Best Paper 선정. 사치바이오 임상 자료 (2024) 참조.</span></div>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer class="footer">
+    <div class="footer-brand">
+      <strong>인크로스데이터랩(IDL)</strong> | 제이시스메디칼_매쿰 관련 타깃 분석 | 2026. 5
+    </div>
+  </footer>
+
+</main>
+
+<script>
+/* ── NAV ACTIVE ── */
+const navItems = document.querySelectorAll('.nav-item');
+const sections = document.querySelectorAll('section.section');
+window.addEventListener('scroll', () => {
+  let cur = '';
+  sections.forEach(s => { if (window.scrollY >= s.offsetTop - 80) cur = s.id; });
+  navItems.forEach(n => n.classList.toggle('active', n.getAttribute('href') === '#' + cur));
+}, {passive:true});
+
+/* ── DEMO TABLE ── */
+const demoRows = [
+  {kw:'스킨부스터', ages:[11.1,17.2,35.0,28.8,17.9], f:80.5, m:19.5, type:'market'},
+  {kw:'스컬트라',   ages:[0.5,15.5,34.2,31.8,18.0],  f:87.2, m:12.8, type:'comp'},
+  {kw:'쥬베룩',    ages:[1.6,22.4,35.5,28.0,12.6],   f:78.6, m:21.4, type:'comp'},
+  {kw:'쥬베룩볼륨',ages:[0.8,17.2,33.6,32.0,16.4],   f:92.9, m:7.1,  type:'comp'},
+  {kw:'리쥬란',    ages:[1.6,19.1,33.1,29.2,17.1],   f:75.0, m:25.0, type:'comp'},
+  {kw:'올리디아',  ages:[0.9,20.1,38.6,28.3,12.0],   f:80.6, m:19.4, type:'comp'},
+  {kw:'메쿰',      ages:[0,21.9,32.8,23.4,21.9],     f:68.8, m:31.3, type:'brand'},
+  {kw:'메쿰7',     ages:[0,11.8,43.1,33.3,11.8],     f:49.0, m:51.0, type:'brand'},
+];
+
+const tbody = document.getElementById('demoTbody');
+let prevType = '';
+demoRows.forEach(r => {
+  const sorted = [...r.ages].map((v,i)=>({v,i})).sort((a,b)=>b.v-a.v);
+  const top1 = sorted[0].i, top2 = sorted[1].i;
+  const isMale = r.m > r.f;
+  let fClass = '', mClass = '';
+  if (isMale) { mClass = r.m>=50?'m-50up':'m-30'; }
+  else { fClass = r.f>=90?'f-90up':r.f>=85?'f-85':r.f>=80?'f-80':''; }
+  const tr = document.createElement('tr');
+  if (r.type==='brand' && prevType!=='brand') tr.classList.add('divider-row');
+  if (r.type==='brand') tr.classList.add('brand-row');
+  prevType = r.type;
+  const isBrand = r.type==='brand';
+  const badge = isBrand ? '<span class="brand-badge-sm">분석</span>' : '';
+  let html = `<td class="kw${isBrand?' brand':''}">${r.kw}${badge}</td>`;
+  r.ages.forEach((v,i) => {
+    let cls='', display=v.toFixed(1)+'%';
+    if(v===0){cls='cell-zero';display='—';}
+    else if(i===top1) cls='cell-1';
+    else if(i===top2) cls='cell-2';
+    else if(v<2) cls='cell-low';
+    html += `<td class="${cls}">${display}</td>`;
+  });
+  html += `<td class="${fClass}" style="border-left:1px solid var(--border)">${r.f.toFixed(1)}%</td>`;
+  html += `<td class="${mClass}">${r.m.toFixed(1)}%</td>`;
+  tr.innerHTML = html;
+  tbody.appendChild(tr);
+});
+
+/* ── CHART DEFAULTS ── */
+Chart.defaults.font.family = "'Noto Sans KR', sans-serif";
+Chart.defaults.color = '#6b7280';
+
+/* ── AGE CHART ── */
+const ageColors = ['#1d5fbc','#0e8f75','#5a8a1a','#c06010','#c0294d','#5b3fa6','#b5821e','#b5821e'];
+new Chart(document.getElementById('ageChart'), {
+  type:'bar',
+  data:{
+    labels:['10대','20대','30대','40대','50대+'],
+    datasets: demoRows.map((r,i)=>({
+      label:r.kw,
+      data:r.ages,
+      backgroundColor:ageColors[i]+(r.type==='brand'?'ee':'66'),
+      borderColor:ageColors[i],
+      borderWidth: r.type==='brand'?1.5:0.5
+    }))
+  },
+  options:{
+    responsive:true, maintainAspectRatio:false,
+    plugins:{
+      legend:{display:false},
+      tooltip:{callbacks:{label:c=>`${c.dataset.label}: ${c.parsed.y.toFixed(1)}%`}}
+    },
+    scales:{
+      x:{ticks:{font:{size:10}},grid:{color:'rgba(0,0,0,0.04)'}},
+      y:{max:50,ticks:{callback:v=>v+'%',font:{size:9}},grid:{color:'rgba(0,0,0,0.05)'}}
+    }
+  }
+});
+
+/* ── GENDER CHART ── */
+const sortedByF = [...demoRows].sort((a,b)=>b.f-a.f);
+new Chart(document.getElementById('genderChart'), {
+  type:'bar',
+  data:{
+    labels: sortedByF.map(r=>r.kw),
+    datasets:[
+      {label:'여성', data:sortedByF.map(r=>r.f), backgroundColor:sortedByF.map(r=>r.type==='brand'?'rgba(181,130,30,0.65)':'rgba(192,41,77,0.55)'), borderWidth:0},
+      {label:'남성', data:sortedByF.map(r=>r.m), backgroundColor:sortedByF.map(r=>r.type==='brand'?'rgba(181,130,30,0.2)':'rgba(91,63,166,0.3)'), borderWidth:0}
+    ]
+  },
+  options:{
+    indexAxis:'y',
+    responsive:true, maintainAspectRatio:false,
+    plugins:{
+      legend:{display:false},
+      tooltip:{callbacks:{label:c=>`${c.dataset.label}: ${c.parsed.x.toFixed(1)}%`}}
+    },
+    scales:{
+      x:{stacked:true,max:100,ticks:{callback:v=>v+'%',font:{size:9}},grid:{color:'rgba(0,0,0,0.05)'}},
+      y:{stacked:true,ticks:{font:{size:10}},grid:{display:false}}
+    }
+  }
+});
+
+/* ── POSITIONING MAPS ── */
+const mapBrands = [
+  {label:'스컬트라',  x1:72,y1:80, x2:82,y2:80, r:13, c:'#0e8f75'},
+  {label:'리쥬란',    x1:88,y1:35, x2:48,y2:35, r:14, c:'#1d5fbc'},
+  {label:'쥬베룩',    x1:65,y1:40, x2:56,y2:42, r:12, c:'#5a8a1a'},
+  {label:'올리디아',  x1:35,y1:56, x2:72,y2:57, r:10, c:'#5b3fa6'},
+  {label:'엘란쎄',    x1:48,y1:88, x2:76,y2:86, r:10, c:'#8a6020'},
+  {label:'래디어스',  x1:42,y1:77, x2:68,y2:77, r:9,  c:'#c06010'},
+  {label:'매쿰7',     x1:18,y1:80, x2:86,y2:82, r:12, c:'#b5821e'},
+];
+
+function buildMap(id, xKey, yKey, xLabel, yLabel) {
+  new Chart(document.getElementById(id), {
+    type:'bubble',
+    data:{
+      datasets: mapBrands.map(d=>({
+        label:d.label,
+        data:[{x:d[xKey], y:d[yKey], r:d.r}],
+        backgroundColor: d.label==='매쿰7'?'rgba(181,130,30,0.2)':d.c+'28',
+        borderColor: d.c,
+        borderWidth: d.label==='매쿰7'?2.5:1.2
+      }))
+    },
+    options:{
+      responsive:true, maintainAspectRatio:false,
+      layout:{padding:{top:22,bottom:10,left:10,right:10}},
+      plugins:{
+        legend:{display:false},
+        tooltip:{callbacks:{label:c=>c.dataset.label}}
+      },
+      scales:{
+        x:{min:0,max:100,
+          title:{display:true,text:xLabel,color:'#6b7280',font:{size:9}},
+          ticks:{display:false},
+          grid:{color:'rgba(0,0,0,0.05)'}},
+        y:{min:0,max:100,
+          title:{display:true,text:yLabel,color:'#6b7280',font:{size:9}},
+          ticks:{display:false},
+          grid:{color:'rgba(0,0,0,0.05)'}}
+      }
+    },
+    plugins:[{
+      id:'bubbleLabels',
+      afterDatasetsDraw(chart){
+        const ctx=chart.ctx;
+        chart.data.datasets.forEach((ds,i)=>{
+          const meta=chart.getDatasetMeta(i);
+          meta.data.forEach(pt=>{
+            const isMc=ds.label==='매쿰7';
+            ctx.save();
+            ctx.fillStyle = isMc?'#8f6010':'#555b65';
+            ctx.font=`${isMc?'700':'400'} 10px 'Noto Sans KR',sans-serif`;
+            ctx.textAlign='center';
+            ctx.fillText(ds.label, pt.x, pt.y-pt.options.radius-5);
+            ctx.restore();
+          });
+        });
+      }
+    }]
+  });
+}
+buildMap('map1','x1','y1','인지도 →','가격 →');
+buildMap('map2','x2','y2','기능성(콜라겐 재생 깊이) →','가격 →');
+</script>
+</body>
+</html>
